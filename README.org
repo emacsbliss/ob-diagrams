@@ -1,0 +1,142 @@
+* ob-diagrams
+Generate various diagrams inside org mode with org-babel and the help from various tools.
+- flowchart/sequence/dot/railroad diagrams (need [[https://github.com/francoislaberge/diagrams][diagrams cli (npm based)]] )
+- state machine diagram (need [[https://github.com/sverweij/state-machine-cat][statemachine cat]])
+- ERD diagram (need [[https://github.com/BurntSushi/erd][erd]])
+
+* Setup
+- install diagrams cli
+- in your emacs init file, add:
+#+BEGIN_SRC elisp
+(add-to-list 'load-path <where ob-diagrams.el resides>)
+(load "ob-diagrams.el")
+(require 'ob-diagrams)
+#+END_SRC
+
+* Customize
+If any of the backend tools needed to generate diagram live in different
+location than the default one, you can customize following variables:
+- ~ob-diagrams-cli~ for flowchart/sequence/dot/railroad,
+- ~ob-diagrams-sm-cli~ for state machine diagram
+- ~ob-diagrams-erd-cli~ for ERD diagram
+ 
+* org-babel spec
+~ob-diagrams~ introduces a new language with name ~diagrams~,
+and two header argument must appear for each org-src block are:
+- ~:type~
+- ~:file~
+
+~:type~ could have following options:
+- flowchart
+- sequence
+- dot
+- railroad
+- statemachine
+- erd
+
+~:file~ specify the output file name, it must be ~svg~ extension.
+
+* Example usages
+** flowchart
+#+BEGIN_SRC diagrams :type flowchart :file flowchart.svg :exports both
+st=>start: Start
+e=>end
+op1=>operation: My Operation
+sub1=>subroutine: My Subroutine
+cond=>condition: Yes
+or No?:>http://www.google.com
+io=>inputoutput: catch something
+st->op1->cond
+cond(yes)->io->e
+cond(no)->sub1(right)->op1
+#+END_SRC
+
+#+RESULTS:
+[[file:flowchart.svg]]
+
+** sequence diagram
+#+BEGIN_SRC diagrams :type sequence :file sequence.svg :exports both
+Alice->Bob: Hello Bob, how are you?
+Note right of Bob: Bob thinks
+Bob-->Alice: I am good thanks!
+#+END_SRC
+
+#+RESULTS:
+[[file:sequence.svg]]
+
+** dot graph
+#+BEGIN_SRC diagrams :type dot :file dot.svg :exports both
+digraph G {
+    main -> parse -> execute;
+    main -> init;
+    main -> cleanup;
+    execute -> make_string;
+    execute -> printf
+    init -> make_string;
+    main -> printf;
+    execute -> compare;
+}
+#+END_SRC
+
+#+RESULTS:
+[[file:dot.svg]]
+
+** railroad
+#+BEGIN_SRC diagrams :type railroad :file railroad.svg :exports both
+Diagram(
+  Optional('+', 'skip'),
+    Choice(0,
+      NonTerminal('name-start char'),
+      NonTerminal('escape')),
+      ZeroOrMore(
+        Choice(0,
+          NonTerminal('name char'),
+          NonTerminal('escape'))))
+
+#+END_SRC
+
+#+RESULTS:
+[[file:railroad.svg]]
+
+** state machine
+#+BEGIN_SRC diagrams :type statemachine :file sm.svg :exports both
+eat   [color="#008800"],
+sleep [color="blue" active],
+meow  [color="red"],
+play  [color="purple"];
+
+sleep -> meow  [color="red"]    : wake up;
+meow  -> meow  [color="red"]    : no response from human;
+meow  -> eat   [color="#008800"]: human gives food;
+meow  -> play  [color="purple"] : human gives toy;
+play  -> sleep [color="blue"]   : tired or bored;
+eat   -> sleep [color="blue"]   : belly full;
+#+END_SRC
+
+#+RESULTS:
+[[file:sm.svg]]
+
+** ERD
+#+BEGIN_SRC diagrams :type erd :file erd.svg :exports both
+[Person]
+*name
+height
+weight
+birth_date
++birth_place_id
+
+[BirthPlace]
+*id
+birth_city
+birth_state
+birth_country
+
+Person *--1 BirthPlace
+#+END_SRC
+
+#+RESULTS:
+[[file:erd.svg]]
+
+* Credits
+- [[https://github.com/francoislaberge/diagrams][diagrams]], [[https://github.com/sverweij/state-machine-cat][statemachine cat]], [[https://github.com/BurntSushi/erd][erd]] for all the heavy lifting!
+- Inspired heavily by [[https://github.com/arnm/ob-mermaid][ob-mermaid]]
